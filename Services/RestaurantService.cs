@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Entities;
+using RestaurantAPI.Exceptions;
 using RestaurantAPI.Models;
 using System.Threading;
 
@@ -10,11 +11,13 @@ public class RestaurantService : IRestaurantService
 {
     private readonly RestaurantDbContext _context;
     private readonly IMapper _mapper;
+    private readonly ILogger<RestaurantService> _logger;
 
-    public RestaurantService(RestaurantDbContext context, IMapper mapper)
+    public RestaurantService(RestaurantDbContext context, IMapper mapper, ILogger<RestaurantService> logger)
     {
         _context = context;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<RestaurantDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
@@ -25,7 +28,8 @@ public class RestaurantService : IRestaurantService
             .Include(r => r.Dishes)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
-        if (restaurant is null) return null;
+        if (restaurant is null)
+            throw new NotFoundException("Restaurant not found");
 
         var restaurantDto = _mapper.Map<RestaurantDto>(restaurant);
         return restaurantDto;
@@ -51,34 +55,35 @@ public class RestaurantService : IRestaurantService
         return restaurant.Id;
     }
 
-    public async Task<bool> UpdateAsync(int id, UpdateRestaurantDto dto, CancellationToken cancellationToken)
+    public async Task UpdateAsync(int id, UpdateRestaurantDto dto, CancellationToken cancellationToken)
     {
         var restaurant = await _context
             .Restaurants
             .FirstOrDefaultAsync(r => r.Id == id);
 
         if (restaurant is null)
-            return false;
+            throw new NotFoundException("Restaurant not found");
 
         restaurant.Name = dto.Name;
         restaurant.Description = dto.Description;
         restaurant.HasDelivery = dto.HasDelivery;
 
         await _context.SaveChangesAsync();
-        return true;
     }
 
-    public async Task<bool> Delete(int id, CancellationToken cancellationToken)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken)
     {
+        _logger.LogError($"Restaurant with id: {id} DELETE action invoked");
+
         var restaurant = await _context
             .Restaurants
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
-        if (restaurant is null) return false;
+        if (restaurant is null)
+            throw new NotFoundException("Restaurant not found");
 
         _context.Restaurants.Remove(restaurant);
         await _context.SaveChangesAsync(cancellationToken);
-        return true;
     }
 
 }

@@ -8,8 +8,8 @@ using RestaurantAPI.Services;
 
 namespace RestaurantAPI.Controllers;
 
-[ApiController]
 [Route("api/restaurant")]
+[ApiController]
 public class RestaurantController : ControllerBase
 {
     private readonly IRestaurantService _service;
@@ -20,18 +20,15 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateRestaurant([FromBody] CreateRestaurantDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateRestaurant([FromBody] CreateRestaurantDto dto, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-            return BadRequest();
-
         var id = await _service.CreateAsync(dto, cancellationToken);
 
         return Created($"/api/restaurant/{id}", null);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Restaurant>>> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var restaurantsDtos = await _service.GetAllAsync(cancellationToken);
 
@@ -39,38 +36,26 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Restaurant>> Get([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
     {
         var restaurant = await _service.GetByIdAsync(id);
-
-        if (restaurant is null)
-            return NotFound();
 
         return Ok(restaurant);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update([FromRoute] int id, UpdateRestaurantDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update([FromRoute] int id, UpdateRestaurantDto dto, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-            return BadRequest();
-
-        var isUpdated = await _service.UpdateAsync(id, dto, cancellationToken);
-
-        if (!isUpdated)
-            return NotFound();
+        await _service.UpdateAsync(id, dto, cancellationToken);
 
         return Ok();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var isDeleted = await _service.Delete(id, cancellationToken);
+        await _service.DeleteAsync(id, cancellationToken);
 
-        if (isDeleted)
-            return NoContent();
-
-        return NotFound();
+        return NoContent();
     }
 }
