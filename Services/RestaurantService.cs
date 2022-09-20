@@ -7,6 +7,15 @@ using System.Threading;
 
 namespace RestaurantAPI.Services;
 
+public interface IRestaurantService
+{
+    int Create(CreateRestaurantDto dto);
+    IEnumerable<RestaurantDto> GetAll();
+    RestaurantDto? GetById(int id);
+    void Update(int id, UpdateRestaurantDto dto);
+    void Delete(int id);
+}
+
 public class RestaurantService : IRestaurantService
 {
     private readonly RestaurantDbContext _context;
@@ -20,13 +29,13 @@ public class RestaurantService : IRestaurantService
         _logger = logger;
     }
 
-    public async Task<RestaurantDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
+    public RestaurantDto? GetById(int id)
     {
-        var restaurant = await _context
+        var restaurant = _context
             .Restaurants
             .Include(r => r.Address)
             .Include(r => r.Dishes)
-            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+            .FirstOrDefault(r => r.Id == id);
 
         if (restaurant is null)
             throw new NotFoundException("Restaurant not found");
@@ -35,31 +44,31 @@ public class RestaurantService : IRestaurantService
         return restaurantDto;
     }
 
-    public async Task<IEnumerable<RestaurantDto>> GetAllAsync(CancellationToken cancellationToken)
+    public IEnumerable<RestaurantDto> GetAll()
     {
-        var restaurants = await _context
+        var restaurants = _context
             .Restaurants
             .Include(r => r.Address)
             .Include(r => r.Dishes)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         var restaurantsDtos = _mapper.Map<List<RestaurantDto>>(restaurants);
         return restaurantsDtos;
     }
 
-    public async Task<int> CreateAsync(CreateRestaurantDto dto, CancellationToken cancellationToken)
+    public int Create(CreateRestaurantDto dto)
     {
         var restaurant = _mapper.Map<Restaurant>(dto);
-        await _context.Restaurants.AddAsync(restaurant, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        _context.Restaurants.Add(restaurant);
+        _context.SaveChanges();
         return restaurant.Id;
     }
 
-    public async Task UpdateAsync(int id, UpdateRestaurantDto dto, CancellationToken cancellationToken)
+    public void Update(int id, UpdateRestaurantDto dto)
     {
-        var restaurant = await _context
+        var restaurant = _context
             .Restaurants
-            .FirstOrDefaultAsync(r => r.Id == id);
+            .FirstOrDefault(r => r.Id == id);
 
         if (restaurant is null)
             throw new NotFoundException("Restaurant not found");
@@ -68,22 +77,22 @@ public class RestaurantService : IRestaurantService
         restaurant.Description = dto.Description;
         restaurant.HasDelivery = dto.HasDelivery;
 
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
     }
 
-    public async Task DeleteAsync(int id, CancellationToken cancellationToken)
+    public void Delete(int id)
     {
         _logger.LogError($"Restaurant with id: {id} DELETE action invoked");
 
-        var restaurant = await _context
+        var restaurant = _context
             .Restaurants
-            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+            .FirstOrDefault(r => r.Id == id);
 
         if (restaurant is null)
             throw new NotFoundException("Restaurant not found");
 
         _context.Restaurants.Remove(restaurant);
-        await _context.SaveChangesAsync(cancellationToken);
+        _context.SaveChanges();
     }
 
 }

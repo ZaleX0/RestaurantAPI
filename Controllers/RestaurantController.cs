@@ -20,41 +20,41 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateRestaurant([FromBody] CreateRestaurantDto dto, CancellationToken cancellationToken)
+    public IActionResult CreateRestaurant([FromBody] CreateRestaurantDto dto)
     {
-        var id = await _service.CreateAsync(dto, cancellationToken);
+        var id = _service.Create(dto);
 
         return Created($"/api/restaurant/{id}", null);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public IActionResult GetAll()
     {
-        var restaurantsDtos = await _service.GetAllAsync(cancellationToken);
+        var restaurantsDtos = _service.GetAll();
 
         return Ok(restaurantsDtos);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
+    public IActionResult Get([FromRoute] int id)
     {
-        var restaurant = await _service.GetByIdAsync(id);
+        var restaurant = _service.GetById(id);
 
         return Ok(restaurant);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update([FromRoute] int id, UpdateRestaurantDto dto, CancellationToken cancellationToken)
+    public IActionResult Update([FromRoute] int id, UpdateRestaurantDto dto)
     {
-        await _service.UpdateAsync(id, dto, cancellationToken);
+        _service.Update(id, dto);
 
         return Ok();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
+    public IActionResult Delete([FromRoute] int id)
     {
-        await _service.DeleteAsync(id, cancellationToken);
+        _service.Delete(id);
 
         return NoContent();
     }

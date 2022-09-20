@@ -15,6 +15,13 @@ public class RestaurantSeeder
     {
         if (_context.Database.CanConnect())
         {
+            if (!_context.Roles.Any())
+            {
+                var roles = GetRoles();
+                _context.Roles.AddRange(roles);
+                _context.SaveChanges();
+            }
+
             if (!_context.Restaurants.Any())
             {
                 var restaurants = GetRestaurants();
@@ -25,6 +32,24 @@ public class RestaurantSeeder
     }
 
 
+    private IEnumerable<Role> GetRoles()
+    {
+        return new List<Role>()
+        {
+            new Role()
+            {
+                Name = "User"
+            },
+            new Role()
+            {
+                Name = "Manager"
+            },
+            new Role()
+            {
+                Name = "Admin"
+            }
+        };
+    }
 
     private IEnumerable<Restaurant> GetRestaurants()
     {
