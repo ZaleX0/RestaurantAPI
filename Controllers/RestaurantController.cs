@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -10,6 +11,7 @@ namespace RestaurantAPI.Controllers;
 
 [Route("api/restaurant")]
 [ApiController]
+[Authorize]
 public class RestaurantController : ControllerBase
 {
     private readonly IRestaurantService _service;
@@ -20,6 +22,7 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Manager")]
     public IActionResult CreateRestaurant([FromBody] CreateRestaurantDto dto)
     {
         var id = _service.Create(dto);
@@ -28,14 +31,15 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = "Atleast20")]
     public IActionResult GetAll()
     {
         var restaurantsDtos = _service.GetAll();
-
         return Ok(restaurantsDtos);
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public IActionResult Get([FromRoute] int id)
     {
         var restaurant = _service.GetById(id);
@@ -44,6 +48,7 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Manager")]
     public IActionResult Update([FromRoute] int id, UpdateRestaurantDto dto)
     {
         _service.Update(id, dto);
@@ -52,6 +57,7 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Manager")]
     public IActionResult Delete([FromRoute] int id)
     {
         _service.Delete(id);

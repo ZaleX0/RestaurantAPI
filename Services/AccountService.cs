@@ -15,6 +15,9 @@ public interface IAccountService
 {
     void RegisterUser(RegisterUserDto dto);
     string GenerateJwt(LoginDto dto);
+
+    //tmp
+    IEnumerable<User> GetUsers();
 }
 
 public class AccountService : IAccountService
@@ -66,9 +69,14 @@ public class AccountService : IAccountService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, $"{user.Firstname} {user.Lastname}"),
             new Claim(ClaimTypes.Role, user.Role.Name),
-            new Claim("DateOfBirth", user.DateOfBirth.Value.ToString("yyyy-MM-dd")),
-            new Claim("Nationality", user.Nationality)
+            new Claim("DateOfBirth", user.DateOfBirth.Value.ToString("yyyy-MM-dd"))
         };
+        if (!string.IsNullOrEmpty(user.Nationality))
+        {
+            claims.Add(
+                new Claim("Nationality", user.Nationality)
+                );
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authenticationSettings.JwtKey));
         var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -83,5 +91,14 @@ public class AccountService : IAccountService
 
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
+    }
+
+
+    //tmp
+    public IEnumerable<User> GetUsers()
+    {
+        return _context.Users
+            .Include(u => u.Role)
+            .ToList();
     }
 }

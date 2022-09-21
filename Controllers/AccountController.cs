@@ -28,4 +28,12 @@ public class AccountController : ControllerBase
         string token = _service.GenerateJwt(dto);
         return Ok(token);
     }
+
+    // tmp
+    [HttpGet]
+    public IActionResult GetUsers()
+    {
+        var users = _service.GetUsers();
+        return Ok(users);
+    }
 }
