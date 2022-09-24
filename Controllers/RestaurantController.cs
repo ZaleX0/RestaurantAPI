@@ -6,6 +6,7 @@ using Microsoft.Extensions.FileProviders;
 using RestaurantAPI.Entities;
 using RestaurantAPI.Models;
 using RestaurantAPI.Services;
+using System.Security.Claims;
 
 namespace RestaurantAPI.Controllers;
 
@@ -26,12 +27,11 @@ public class RestaurantController : ControllerBase
     public IActionResult CreateRestaurant([FromBody] CreateRestaurantDto dto)
     {
         var id = _service.Create(dto);
-
         return Created($"/api/restaurant/{id}", null);
     }
 
     [HttpGet]
-    [Authorize(Policy = "Atleast20")]
+    [Authorize(Policy = "CreatedAtleast2Restaurants")]
     public IActionResult GetAll()
     {
         var restaurantsDtos = _service.GetAll();
@@ -43,7 +43,6 @@ public class RestaurantController : ControllerBase
     public IActionResult Get([FromRoute] int id)
     {
         var restaurant = _service.GetById(id);
-
         return Ok(restaurant);
     }
 
@@ -52,7 +51,6 @@ public class RestaurantController : ControllerBase
     public IActionResult Update([FromRoute] int id, UpdateRestaurantDto dto)
     {
         _service.Update(id, dto);
-
         return Ok();
     }
 
@@ -61,7 +59,6 @@ public class RestaurantController : ControllerBase
     public IActionResult Delete([FromRoute] int id)
     {
         _service.Delete(id);
-
         return NoContent();
     }
 }

@@ -61,7 +61,7 @@ public class AccountService : IAccountService
             throw new BadRequestException("Invalid username or password");
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-        if(result == PasswordVerificationResult.Failed)
+        if (result == PasswordVerificationResult.Failed)
             throw new BadRequestException("Invalid username or password");
 
         var claims = new List<Claim>()

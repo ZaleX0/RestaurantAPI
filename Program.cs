@@ -47,10 +47,14 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("HasNationality", builder => builder.RequireClaim("Nationality"));
     options.AddPolicy("Atleast20", builder => builder.AddRequirements(new MinimumAgeRequirment(20)));
+    options.AddPolicy("CreatedAtleast2Restaurants",
+        builder => builder.AddRequirements(new CreatedMultipleRestaurantsRequirement(2)));
 });
 
 // Add services to the container.
 builder.Services.AddScoped<IAuthorizationHandler, MinimumAgeRequirmentHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CreatedMultipleRestaurantsRequirementHandler>();
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddDbContext<RestaurantDbContext>();
@@ -59,10 +63,12 @@ builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
 builder.Services.AddScoped<RequestTimeMiddleware>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(option =>
 {
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
