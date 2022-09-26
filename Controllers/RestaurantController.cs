@@ -31,10 +31,10 @@ public class RestaurantController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "CreatedAtleast2Restaurants")]
-    public IActionResult GetAll()
+    //[Authorize(Policy = "CreatedAtleast2Restaurants")]
+    public IActionResult GetAll([FromQuery] RestaurantQuery query)
     {
-        var restaurantsDtos = _service.GetAll();
+        var restaurantsDtos = _service.GetAll(query);
         return Ok(restaurantsDtos);
     }
 

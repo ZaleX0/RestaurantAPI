@@ -14,6 +14,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using RestaurantAPI.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using System.Runtime.CompilerServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +67,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
+builder.Services.AddScoped<IValidator<RestaurantQuery>, RestaurantQueryValidator>();
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
 builder.Services.AddScoped<RequestTimeMiddleware>();
 builder.Services.AddHttpContextAccessor();
@@ -95,8 +97,18 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontEndClient", corsBuilder =>
+        corsBuilder.AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithOrigins(builder.Configuration["AllowedOrigins"])
+    );
+});
 
 var app = builder.Build();
+
+app.UseCors("FrontEndClient");
 
 // Configure the HTTP request pipeline.
 var scope = app.Services.CreateScope();
